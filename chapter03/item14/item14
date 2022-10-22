@@ -1,0 +1,86 @@
+Object의 메서드가 아닌 (equals, clone, toString…)
+
+**Comparable 인터페이스의 유일무이한 메서드 CompareTO**
+
+### equals ↔ CompareTo
+
+**CompareTo는 동치성 비교에 더해 순서까지 비교가능**하며 **[제네릭](https://www.notion.so/14-f8216671b83f46cdb9316d03fc51a4eb)한 강점을 가지고 있다.** 
+
+(제네릭:사용자가 지정하는 것)
+
+**Arrays.sort()**를 호출하면 컴퓨터가 알아서 배열을 정리하는 것처럼 보이지만 
+
+사실은 Characher클래스의 Comparable의 구현에 의해 정리된 것
+
+### **Comprarator와 Comparable**
+
+**모두 인터페이스로 컬렉션을 정렬하는데 필요한 메서드를 정의하고 있음**
+
+⇒ **같은 타입의 인스턴스끼리 서로 비교**할 수 있는 클래스들
+
+- **Comparabe**을 구현하고 있는 클래스들
+
+기본적으로 오름차순으로 **정렬**되도록 구현되어있음
+
+**compare()와 compareTo()는 두 객체를 비교하는 기능을 목적으로 고안**
+
+- **compareTo**의 반환값은 **int**지만
+    - 비교하는 두 객체가 **같으면 0**
+    - 비교하는 값보다 **작으면** **음수**
+    - 비교하는 값보다 **크면 양수**
+- **compare**도 객체를 비교해서 음수, 0 , 양수중의 하나를 반환하도록 구현해야함
+
+**Comparable 기본 정렬기준을 구현하는데 사용**
+
+**Comparator 기본 정렬기준 외에 다른 기준으로 정렬하고자 할 때 사용**
+
+**CompareTo메서드**에서 
+
+**관계 연산자**와 **<** 와 **>** 를 사용하는 이전 방식은 거추장스럽고 오류를 유발하니, 이제는 추천하지 않는다.
+
+```java
+package test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+
+**class Point implements Comparable<Point> {
+	public int x, y;
+
+	Point(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	@Override
+	public int compareTo(Point o) {
+		if (this.x == o.x) {
+			return this.y - o.y;
+
+		} else {
+			return this.x - o.x;
+		}
+	}
+}**
+
+class Main {
+	public static void main(String[] args) {
+		Scanner scan = new Scanner(System.in);
+		int n = scan.nextInt();
+
+		ArrayList<Point> arr = new ArrayList<>();
+		for (int i = 0; i < n; i++) {
+			int x = scan.nextInt();
+			int y = scan.nextInt();
+			
+			arr.add(new Point(x, y));
+		}
+		
+		Collections.sort(arr);
+		for(Point o : arr) {
+			System.out.println(o.x + " " + o.y);
+		}
+	}
+}
+```
