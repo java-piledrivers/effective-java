@@ -33,8 +33,7 @@ for(Iterator i = stamps.iterator(); i.hasNext();) {
 ---
 
 ## 용어 정리
-- 제네릭 클래스[인터페이스] : 클래스[인터페이스] 선언에 타입 매개변수(type parameter)가 쓰인다. Example.class
-- 제네릭 타입(Generic Type) : 제네릭 클래스와 제네릭 인터페이스를 통틀어 이르는 말. Example<T>
+
 
 |용어|영문|예|
 |----|----|--|
