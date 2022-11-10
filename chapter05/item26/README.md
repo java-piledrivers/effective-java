@@ -28,6 +28,8 @@ for(Iterator i = stamps.iterator(); i.hasNext();) {
 }
 ```
 
+<br>
+
 ---
 
 ## 용어 정리
