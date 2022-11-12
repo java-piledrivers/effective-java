@@ -52,11 +52,11 @@ E, List<E>, List<String> 과 같은 타입을 실체화 불가 타입 혹은 비
 ```java
 class GenericArray {
     public static void main(String[] args) {
-        List<String>[] stringLists = new List<String>[1]; // 된다고 가정
-        List<Integer> intList = List.of(42); 
-        Object[] objects = stringLists; // 공변이라 OK
-        objects[0] = intList; 
-        String s = stringLists.get(0); 
+      List<String>[] stringLists = new List<String>[1]; // 된다고 가정
+      List<Integer> intList = List.of(42);
+      Object[] objects = stringLists; // 배열은 공변성을 가지므로 Object[]는 ArrayList[]가 될 수 있다.
+      objects[0] = intList; // intList또한 ArrayList이므로 배열의 요소가 될 수 있다. 
+      stringLists[0].get(0); // String 타입을 가져야 하지만 Integer이므로 예외 발생 
     }
 }
 ```
