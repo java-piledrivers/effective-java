@@ -19,7 +19,7 @@ ordinal 값은 0부터 시작되는데요, `numberOfMusicians()`메서드에 +1�
 혼자 연주하는 SOLO는 1, 둘이서 연주하는 DUET은 2와 자연스레 매칭됩니다.
 
 얼핏 보면 굉장히 좋아보입니다. 따로 무언가를 추가할 필요없이 열거 타입 상수와 연결되어 있고, 의미가 일치하는 정숫값이 자동으로 생성되어 있습니다.
-"합주단의 종류"와 "연주자의 수"가 적절히 연관되었습니다. 하지만, 동작만 할 뿐 유지보수에 끔찍한 코드입니다.
+"합주단의 종류"와 "연주자의 수"가 적절히 연관됩니다. 하지만, 동작만 할 뿐 유지보수에 끔찍한 코드입니다.
 
 ### 문제 1. 상수 선언 순서 변경
 ```java
@@ -34,7 +34,7 @@ enum Ensemble1 {
     public int numberOfMusicians() { return ordinal() + 1; }
 }
 ```
-순서 하나만 실수로 바꾸어도 `numberOfMusicians()`메서드는 오동작 합니다. 실제로 위에 두 enum 클래스들의 ordinal을 출력하면 다른 값이 나옵니다.
+순서 하나만 실수로 바꾸어도 `numberOfMusicians()`메서드는 오동작 합니다. 실제로 위에 두 enum 클래스들의 같은 의미인 SOLO의 ordinal을 출력하면 다른 값이 나옵니다.
 ```java
 class Main {
     public static void main(String[] args) {
@@ -62,7 +62,7 @@ enum Ensemble2 {
     }
 }
 ```
-복4중주(double quartet)도 추가하고 싶지만, 이미 8명인 OCTEC이 존재해서, 정숫값 8위치에 넣을 수가 없습니다.
+8명이 연주하는 복4중주(double quartet)도 추가하고 싶지만, 이미 8 정숫값을 OCTEC이 차지하고 있습니다. 정숫값 8위치에 복4중주를 넣을 수가 없습니다.
 
 ### 문제 3. 12명이 연주하는 3중 4중주(triple_quartet)를 추가하고 싶다.
 ```java
@@ -98,7 +98,7 @@ public enum Ensemble {
     public int numberOfMusicians() { return numberOfMusicians; }
 }
 ```
-결국 직접 저장합니다. 의미가 정확하게 나타나고 유지보수도 편합니다.
+결국 인스턴스 필드에 직접 저장합니다. 의미가 정확하게 나타나고 유지보수도 편합니다.
 
 애초에 Enum의 API 문서 내용입니다.
 > "대부분 프로그래머는 이 메서드를 쓸 일이 없다. 이 메서드는 EnumSet과 EnumMap 같이 열거 타입기반의 범용 자료구조에 쓺 목적으로 설계되었다."
