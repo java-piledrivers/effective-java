@@ -1,0 +1,203 @@
+https://forest-afternoon-2d5.notion.site/38-53848a1ef7634674bd6ddcc51c67d6d4
+
+## 확장할 수 있는 열거타입이 필요하면 인터페이스를 사용하라.
+
+- **제목을 통해 추측 가능한 것**
+    1. **열거타입은 확장을 할 수 없다.**
+    2. **열거타입은 인터페이스를 구현할 수 있다.**
+    
+
+### 1. 열거타입은 확장 할 수 없다.
+
+타입 안전 열거 패턴 ↔ **열거타입**
+
+- 열거타입이 타입 안전 열거 패턴보다 우수하다.
+- 단, 타입 안전 열거 패턴은 **확장**이 가능하지만 열거타입은 불가능하다.
+
+- **책에서 얘기하는 “확장”**
+    
+    타입 안전 열거 패턴은 **열거한 값들을 그대로 가져온 다음 값을 더 추가하여 다른 목적으로 쓸 수 있는** 반면, 열거 타입은 그렇게 할 수 없다.
+    
+
+→ 사실 대부분 상황에서 열거 타입을 확장하는 건 좋지 않은 생각이다.
+
+⇒ ‘확장한 타입의 원소는 기반 타입의 원소로 취급하지만 그 반대는 성립하지 않는다면 이상하지 않은가.’
+
+그러면 왜 확장에 대해 염두해고 있는가?
+
+확장할 수 있는 열거타입이 어울리는 쓰임이 최소한 하나는 있기 때문
+
+⇒ **연산코드**
+
+→API가 제공하는 기본 연산 외에 사용자 확장 연산을 추가할 수 있도록 열어줘야 할 때가 있음
+
+### 2. 열거 타입은 ‘임의의 인터페이스’를 구현할 수 있다.
+
+→ [연산 코드용 인터페이스를 정의](https://www.notion.so/38-53848a1ef7634674bd6ddcc51c67d6d4)하고 [열거타입이 이 인터페이스](https://www.notion.so/38-53848a1ef7634674bd6ddcc51c67d6d4)를 구현하게 하면 됨
+
+이 떄 열거타입이 그 인터페이스의 **[표준 구현체 역할](https://catsbi.oopy.io/c17a8b3a-2d0b-40a7-8651-c684784bedd0)**을 한다.
+
+```java
+public interface Operation {
+	
+	double apply(double x, double y);
+
+}
+```
+
+```java
+public enum BasicOperation implements Operation {
+	PLUS("+") {
+	public double apply(double x, double y) {return x + y;}
+	},
+	MINUS("-") {
+	public double apply(double x, double y) {return x - y;}
+	},
+	TIMES("*") {
+	public double apply(double x, double y) {return x * y;}
+	},
+	DIVIDE("/") {
+	public double apply(double x, double y) {return x / y;}
+	};
+	
+	
+	private final String symbol;
+	BasicOperation(String symbol) {
+		this.symbol = symbol;
+	}
+	
+	@Override public String toString() {
+		return symbol;
+	}
+
+}
+```
+
+- **열거 타입은 ‘임의의 인터페이스’를 구현할 수 있다.**
+    
+    열거타입인 `enum BasicOperation` 은 확장할 수 없지만 
+    
+    인터페이스인 `interface Operation` 은 확장할 수 있고, 
+    
+    이 인터페이스를 연산의 타입으로 사용하면 된다. 
+    
+
+```java
+public enum ExtendedOperation implements [Operation](https://www.notion.so/38-53848a1ef7634674bd6ddcc51c67d6d4) {
+	PLUS("^") {
+	public double apply(double x, double y) {
+		return Math.pow(x, y);
+		}
+	},
+	MINUS("%") {
+	public double apply(double x, double y) {
+		return x % y;
+		}
+	};
+	
+	private final String symbol;
+	
+	ExtendedOperation(String symbol) {
+		this.symbol = symbol;
+	}
+	
+	@Override public String toString() {
+		return symbol;
+	}
+
+}
+```
+
+apply가 인터페이스에 선언되어 있으니 열거타입에 따로 추상메서드로 선언하지 않아도 됨
+
+[개별 인스턴스 수준에서뿐 아니라](https://gmlwjd9405.github.io/2018/09/17/class-object-instance.html)  
+
+타입수준에서도, 
+
+기본 열거 타입대신 확장된 열거 타입을 넘겨 
+
+확장된 열거타입의 원소 모두를 사용하게 할 수도 있다.
+
+1. Class 객체
+
+```java
+public static void main(String[] args) {
+		double x = Double.parseDouble(args[0]);
+		double y = Double.parseDouble(args[1]);
+		test(ExtendedOperation.class, x, y);
+		
+	}
+	
+	
+	private static <**T extends Enum<T> & Operation**> void test
+			(**Class<T>** opEnumType, double x, double y) {
+		for (Operation op : opEnumType.getEnumConstants())
+			System.out.printf("%f %s %f = %f%n",
+					x, op, y, op.apply(x, y));
+	}
+```
+
+ `<**T extends Enum<T> & Operation**>` **`Class<T>`**
+
+Class 객체가 열거타입인 동시에 Operation 하위 타입이어야 한다는 뜻
+
+→ **열거타입이어야 원소를 순회할 수 있고,**
+
+**[Operation](https://www.notion.so/38-53848a1ef7634674bd6ddcc51c67d6d4)이어야 원소가 뜻하는 연산을 수행할 수 있기 때문**
+
+1. **한정적 와일드 카드 타입 <?>**
+
+```java
+public static void main(String[] args) {
+		double x = Double.parseDouble(args[0]);
+		double y = Double.parseDouble(args[1]);
+		test(Arrays.asList(ExtendedOperation.values()),x ,y);
+		
+	}
+	
+	
+	private static void test(Collection<? extends Operation> opSet,
+			double x, double y) {
+		for(Operation op : opSet) {
+			System.out.printf("%f %s %f = %f%n",
+					x, op, y, op.apply(x, y));
+		}
+	}
+```
+
+인터페이스를 이용해 확장 가능한 열거 타입을 흉내 내는 방식에도 
+
+한가지 **사소한 문제**가 있다.
+
+바로 열거 타입끼리 구현을 상속할 수 없다는 점
+
+→ 아무 상태에서도 의존하지 않는 경우에는 [디폴트 구현](https://github.com/java-piledrivers/effective-java/tree/main/chapter04/item20)을 이용해 인터페이스에 추가하는 방법이 있다.
+
+→ 공유하는 기능이 많다면 그부분을 별도의 도우미 클래스나 정적 도우미 메서드로 분리하는 방식으로 코드 중복을 없앨 수 있다.
+
+**자바 라이브러리도 이번 아이템에서 소개한 패턴을 사용한다.**
+
+- `java.nio.file.LinkOption`
+    
+    ```java
+    public enum LinkOption implements OpenOption, CopyOption {
+        /**
+         * Do not follow symbolic links.
+         *
+         * @see Files#getFileAttributeView(Path,Class,LinkOption[])
+         * @see Files#copy
+         * @see SecureDirectoryStream#newByteChannel
+         */
+        NOFOLLOW_LINKS;
+    }
+    ```
+    
+    ```java
+    public interface OpenOption {
+    }
+    ```
+    
+    ```java
+    public interface CopyOption {
+    }
+    ```
