@@ -1,5 +1,7 @@
 # 이펙티브 자바 3판 스터디
 
+이 스터디는 [java-squid/effective-java](https://github.com/java-squid/effective-java) 를 기반하여 진행합니다.
+
 ## 목표
 
 - 혼자 독학하기 힘든 이펙티브 자바를 같이 공부한다
