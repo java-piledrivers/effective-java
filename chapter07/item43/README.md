@@ -64,4 +64,7 @@ service.excute(() -> action()); // 람다
 |클래스 생성자|TreeMap<K, V>::new|() -> new TreeMap<K, V>()
 |배열 생성자|int[]::new|len -> new int[len]
 
-https://stackoverflow.com/questions/35914775/java-8-difference-between-method-reference-bound-receiver-and-unbound-receiver
+
+## Reference
+- https://velog.io/@banjjoknim/%EC%95%84%EC%9D%B4%ED%85%9C-43.-%EB%9E%8C%EB%8B%A4%EB%B3%B4%EB%8B%A4%EB%8A%94-%EB%A9%94%EC%84%9C%EB%93%9C-%EC%B0%B8%EC%A1%B0%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EB%9D%BC   
+- https://stackoverflow.com/questions/35914775/java-8-difference-between-method-reference-bound-receiver-and-unbound-receiver
