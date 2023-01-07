@@ -1,0 +1,144 @@
+## 스트림API
+
+**다량의 데이터 처리 작업**을 돕고자 자바8부터 추가됨
+
+### 1. **스트림은 데이터 원소의 유한 혹은 무한 시퀀스를 뜻한다.**
+
+- 용어 설명
+    
+    [시퀀스](https://m.blog.naver.com/truetruebot/221297388722) :  알고리즘 내에서 공간적·시간적으로 정해져 있는 순서
+    
+    [유한 혹은 무한 시퀀스](https://ko.gadget-info.com/difference-between-sequence):
+    
+    **유한시퀀스** 유한 시퀀스는 a 1, a 2, a 3, a 4, a 5, a 6 ... a n 의리스트의 **끝에 멈추는 시퀀스**이다.
+    
+    **무한시퀀스** **무한 연속이란 끝나지 않은 연속**을 가리 킵니다. a 1, a 2, a 3, a 4, a 5, a 6 ... a n .... .는 다음과 같이 표현됩니다
+    
+
+스트림 원소들은 어디로부터든 올수있다.
+
+⇒ *컬렉션, 배열, 파일, 정규표현식 패턴 매처, 난수 생성기, 혹은 다른 스트림*
+
+⇒ *스트림 안의 데이터 원소들은 객체 참조나 기본 타입 값*
+
+기본 타입의 값 : int, long, double [.](https://www.notion.so/45-e846fd445abb48b180b438fe1f236a18)
+
+### 2. 스트림 파이프 라인은 이 원소들로 수행하는 연산 단계를 표현
+
+- 용어 설명
+    
+    파이프라인: 컴퓨터 과학에서 한 데이터 처리 단계의 출력이 다음 단계의 입력으로 이어지는 형태로 연겨되는 구조
+    
+
+**`소스 스트림 → [중간 연산] → 종단 연산`**
+
+![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/499c2e39-ba6e-4dba-b4a0-51c26bbac6b1/Untitled.png)
+
+[https://velog.io/@semi-cloud/Effective-Java-아이템-45-스트림은-주의해서-사용하라](https://velog.io/@semi-cloud/Effective-Java-%EC%95%84%EC%9D%B4%ED%85%9C-45-%EC%8A%A4%ED%8A%B8%EB%A6%BC%EC%9D%80-%EC%A3%BC%EC%9D%98%ED%95%B4%EC%84%9C-%EC%82%AC%EC%9A%A9%ED%95%98%EB%9D%BC)
+
+1. **스트릠 파이프라인은 지연 평가 된다.**
+
+**평가는 종단 연산이 호출될 때 이뤄지며** 종단 연산에 쓰이지 않는 데이터 원소는 계산이 쓰이지 않는다.
+
+→ 종단 연산이 없는 스트림 파이프 라인은 아무 일도 하지 않는 명령어 no-op와 같으니 **종단 연산을 빼먹지 말자.**
+
+1. **스트림 API는 메서드 연쇄를 지원하는 [플루언트 API](https://ko.m.wikipedia.org/wiki/%ED%94%8C%EB%A3%A8%EC%96%B8%ED%8A%B8_%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4)** 
+
+메소드 체이닝(https://dreamcoding.tistory.com/m/60)에 상당 부분 기반한 객체 지향 API 설계 메소드이며, (bold)소스 코드의 가독성을 **산문**과 유사하게 만드는 것이 목적(bold)
+
+```java
+public class Anagrams {
+	  public static void main(String[] args) throws IOException {
+      File dictionary = new File(args[0]);
+      int minGroupSize = Interger.parseInt(args[1]);
+      
+      Map<String, Set<String>> groups = new HashMap<>();
+      try(Scanner s = new Scanner(dictionary)){
+      	while(s.hasNext()){
+        	String word = s.next();
+            **groups.computeIfAbsent(alphabetize(word), (unused) -> new TreeSet<>()).add(word);**
+        }
+      }
+      
+      for(Set<String> group : groups.values())
+      	if(group.size() >= minGroupSize)
+        	System.out.println(group.size() + ":" + group);
+    }
+    
+    public static String alphabetie(String s){
+    	char[] a = s.toCharArray();
+        Arrays.sort(a);
+        return new String(a);
+    }
+}
+```
+
+**groups.computeIfAbsent(alphabetize(word), (unused) -> new TreeSet<>()).add(word);**
+
+⇒ **프로그램이 짧고 깔끔해짐**
+
+---
+
+## 아이템 45 **스트림을 주의해서 사용하라**
+
+⇒ **과도한 스트림은 읽기도 어렵고 유지보수도 힘들어진다.**
+
+```java
+public class AnagramsStream {
+    public static void main(String[] args) throws IOException {
+        Path dictionary = Paths.get(args[0]);
+        int minGroupSize = Integer.parseInt(args[1]);
+
+        try (Stream<String> words = Files.lines(dictionary)) {
+            words.collect(
+                            groupingBy(word -> word.chars().sorted()
+                                    .collect(StringBuilder::new,
+                                            (sb, c) -> sb.append((char) c),
+                                            StringBuilder::append).toString()))
+                    .values().stream()
+                    .filter(group -> group.size() >= minGroupSize)
+                    .map(group -> group.size() + ": " + group)
+                    .forEach(System.out::println);
+        }
+    }
+}
+```
+
+```java
+public class AnagramsStream {
+    public static void main(String[] args) throws IOException {
+        Path dictionary = Paths.get(args[0]);
+        int minGroupSize = Integer.parseInt(args[1]);
+ 
+        **try (Stream<String> words = Files.lines(dictionary)) {
+            words.collect(groupingBy(word -> alphabetize(word))) 
+                    .values()
+                    .stream()
+                    .filter(group -> group.size() >= minGroupSize)
+                    .forEach(group -> System.out.println(group.size() + ": " + group));**
+        }
+    }
+
+    private static String **alphabetize**(String s) {
+        **char**[] a = s.toCharArray();
+        Arrays.sort(a);
+        return new String(a);
+    }
+}
+```
+
+**alphabetize 메서드도 스트림을 사용해 다르게 구현할 수 있음**
+
+1. 명확성이 떨어짐
+2. 잘못 구현한 가능성이 커짐
+3. 느려질 수도 있음
+
+⇒[자바가 기본타입인 char용 스트림을 지원하지 않기 때문](https://www.notion.so/45-e846fd445abb48b180b438fe1f236a18)
+
+ 
+
+### 
+
+### 기존 코드는 스트림을 사용하여 리팩터링하되,
+
+### 새 코드가 나아 보일 때만 반영하자.
