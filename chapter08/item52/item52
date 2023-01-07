@@ -1,0 +1,156 @@
+```java
+
+public class CollectionClassifier {
+	  public static String classify(Set<?> s) {
+	    return "Set";
+	  }
+	  public static String classify(Collection<?> c) {
+	    return "Collection";
+	  }
+	  public static String classify(List<?> l) {
+		    return "List";
+	  }
+
+	  public static void main(String[] args) {
+	    **Collection<?>**[] collections = {
+	          new HashSet<String>(),
+	          new ArrayList<BigInteger>(),
+	          new HashMap<String, String>().values()
+	    };
+
+	    for (**Collection<?>** c : collections) {
+	      System.out.println(classify(c));
+	    }
+	  }
+	}
+```
+
+Collection
+Collection
+Collection
+**어느 메서드를 호출할지 컴파일 타임에 정해지기 때문에** 
+
+```java
+static class Champagne extends Wine {
+	    @Override
+	    String name() {
+	      return "Champagne";
+	    }
+	  }
+	  
+	  static class SparklingWine extends Wine {
+		    @Override
+		    String name() {
+		      return "SparklingWine";
+		    }
+		  }
+	  
+	  static class Wine {
+		    String name() {
+		      return "Wine";
+		    }
+		  }
+
+	  public static void main(String[] args) {
+	    List<Wine> wineList = List.of(
+	          new Wine(), new Champagne(), new SparklingWine()
+	    );
+	    for (Wine wine : wineList) {
+	      System.out.println(wine.name());
+	    }
+	  }
+```
+
+### 다중정의가 혼동을 일으킬 수 있기 때문이다.
+
+**다중정의가 혼동 일으키는 상황을 피해야 한다.**
+
+1. **매개변수가 같은 다중정의는 만들지 말자. (1)**
+2. **다중정의하는 대신 메서드 이름을 다르게 지어주자. (2)**
+
+**생성자는 이름을 다르게 지을 수 없으니 두번째 생성자부터는 무조건 다중정의가 된다.**
+
+**⇒ 매개변수 타입이 근본적으로 다르면 된다. (서로 형변환 할 수 없게)**
+
+```java
+public static void main(String[] args) {
+		  Set<Integer> set = new TreeSet<>();
+		  List<Integer> list = new ArrayList<>();
+
+		  for (int i = -3; i < 3; i++) {
+		    set.add(i);
+		    list.add(i);
+		  }
+		  for (int i = 0; i < 3; i++) {
+		    set.remove(i);
+		    list.remove(i);
+		  }
+		  System.out.println(set + ", " + list);
+		}                                                                                 mi8
+```
+
+[-3, -2, -1], [-2, 0, 2] 
+
+**매개변수 타입이 근본적으로 다르면 된다.**
+
+set.remove(i) remove(object) 
+
+list.remove(i) remove(int index)
+
+- 저장한 위치를 제거
+    
+    [-3, -2, -1, 0, 1, 2]
+    
+    ---
+    
+    [~~-3~~, -2, -1, 0, 1, 2]
+    
+    [-2, ~~-1~~, 0, 1, 2]
+    
+    [-2, 0, ~~1~~, 2]
+    
+    ---
+    
+    [-2, 0, 2] 
+    
+
+```java
+	public static void main(String[] args) {
+		  Set<Integer> set = new TreeSet<>();
+		  List<Integer> list = new ArrayList<>();
+
+		  for (int i = -3; i < 3; i++) {
+		    set.add(i);
+		    list.add( i);
+		  }
+		  for (int i = 0; i < 3; i++) {
+		    set.remove(i);
+		    **list.remove((Integer) i);**
+		  }
+		  System.out.println(set + ", " + list);
+		}
+```
+
+→ 자바언어에 제네릭과 오토박싱을 더한 결과 List 인터페이스가 취약해짐
+
+**List<E> 인터페이스가 remove(object) remove(int)를 다중정의했기 때문**
+
+```java
+public static void main(String[] args) {
+		new Thread(System.out::println).start();
+		
+		ExecutorService exec = Executors.newCachedThreadPool();
+		**exec.submit(System.out::println);**
+	}
+```
+
+![tempsnip.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b987af96-b778-4083-81b5-af1cdabe1869/tempsnip.png)
+
+[Callable<T>](https://codechacha.com/ko/java-callable-vs-runnable/) 
+
+```java
+ExecutorService exec = Executors.newCachedThreadPool();
+	exec.submit(**(Runnable )**System.out::println);
+```
+
+**⇒ 메서드를 다중정의할 때, 서로 다른 함수형 인터페이스라도 같은 위치의 인수로 받아서는 안된다.**
