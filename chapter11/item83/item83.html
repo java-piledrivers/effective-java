@@ -1,0 +1,140 @@
+노션 링크 -> https://forest-afternoon-2d5.notion.site/83-6bc7fea1cb644204936e0c1ca2feb344 (여기서 확인하는게 눈에 보기 더 쉽습니다)
+
+## 지연 초기화
+
+**필드의 초기화 시점을 그 값이 처음 “필요"할 때까지 늦추는 기법**
+
+(→ 값이 쓰이지 않으면 초기화도 결코 일어나지 않음)
+
+**정적 필드**와 **인스턴스 필드** 모두에 사용할 수 있음
+
+1. 지연 초기화는 주로 **최적화 용도**로 쓰임
+2. 클래스와 인스턴스 초기화 때 발생하는 **위험한 순한 문제를 해결하는 효과도 있음**
+
+**그렇지만 지연 초기화는 필요할 때까지는 하지 않는게 좋다**
+
+클래스 혹은 인스턴스 생성 시의 초기화 비용은 줄지만 
+
+**그 대신 지연 초기화하는 필드에 접근하는 비용은 커짐** 
+
+**지연 초기화가 필요할 때**
+
+**해당 클래스의 인스턴스 중 그 필드를 사용하는 인스턴스의 비율이 낮은 반면,** 
+
+**그 필드를 초기화하는 비용이 크다면 지연 초기화가 제 역할을 해줄 것**
+
+→ 하지만 정말 그런지 확인할 수 있는 방법은 지연 초기화 적용 전후의 성능을 측정해보는 것 밖에 없다.
+
+---
+
+멀티스트레드 환경에서는 지연 초기화를 하기가 까다롭다
+
+→ 지연 초기화하는 필드를 둘 이상의 스레드가 공유한다면 어떤 형태로든 반드시 **동기화** 해야 함
+
+---
+
+### 인스턴스 필드
+
+```java
+private final FieldType field = computeFieldValue();
+```
+
+1. **지연 초기화가 초기화 순환성을 깨뜨릴 것 같으면** 
+
+⇒  **synchronized를 단 접근자를 사용하자**
+
+```java
+private final FieldType field;
+
+private **synchronized** FieldType getField() {
+	if(field == null)
+		field = computeFieldValue();
+	return field;
+
+}
+```
+
+→ **정적 필드**에도 똑같이 적용됨. 
+
+물론 필드와 **접근자 메서드 선언에 static 한정자를 추가해야 함**
+
+b. **성능 때문에 인스턴스 필드를 지연 초기화해야 한다면** 
+
+**⇒ 이중 검사 관용구를 사용하라**
+
+- 초기화 된 필드에 접근할 때의 동기화 비용을 없애줌
+- 필드의 값을 두 번 검사하는 방식으로,
+    
+    한 번은 동기화 없이 검사하고, **두 번째는 동기화하여 검사함**
+    
+    두 번째 검사에서도 필드가 초기화되지 않았을 때만 필드를 초기화함
+    
+    필드가 초기화된 후로는 동기화하지 않으므로 
+    
+    해당 필드는 반드시 **volatile로 선언해야함** 
+    
+
+```java
+priate **volatile** FieldType field;
+
+private FieldType getField(){
+	FieldType result = field;
+	if(result != null) { //첫 번째 검사 (락 사용 안함)
+		return result;
+
+	**synchronized**(this) {
+		if(field == null) //두 번째 검사 (락 사용)
+			field = computeFieldValue();
+		return field;
+	}
+}
+```
+
+c. **이중검사에는 변종이 두 가지 있음**
+
+이따금 반복해서 초기화해도 상관없는 인스턴스 필드를 지연 초기화해야 할 때가 있는데 이런 경우라면 이중검사에서 두 번째 검사를 생략할 수 있음
+
+이 변종의 이름은 자연히 **단일검사 관용구**가 됨
+
+필드는 여전히 volatile로 선언함
+
+```java
+priate **volatile** FieldType field;
+
+private FieldType getField(){
+	FieldType result = field;
+	if(result == null)  
+		field = result = computeFieldValue();
+	return result;
+}
+```
+
+### 정적 필드
+
+1. 성능 때문에 정적 필드를 지연 초기화해야 한다면 
+
+**지연 초기화 홀더 클래스 관용구**를 사용하자 
+
+→ 클래스는 클래스가 처음 쓰일 때 비로서 초기화된다는 특성을 이용한 관용구
+
+```java
+private **static** class FieldHolder { 
+	static final FieldType field = computeFieldValue();
+}
+
+private static FieldType getField() {return FieldHolder.field;}
+```
+
+---
+
+### 결론
+
+**이번 아이템에서 이야기한 모든 초기화 기법은 기본 타임 필드와 객체 참조 필드 모두에 적용할 수 있음**
+
+이중검사와 단일검사 관용구를 수치 기본 타입 필드에 적용한다면 필드의 값을 null 대신 (숫자 기본 타입 변수의 기본값인) 0과 비교하면 된다.
+
+모든 스레드가 필드의 값을 다시 계산해도 상관없고 필드의 타입이 long과 double을 제외한 다른 기본 타입이라면, 단일검사의 필드 선언에서 volatile한정자를 없애도 됨
+
+→ 단일검사
+
+어떤 환경에선느 필드 접근 속도를 높여주지만, 초기화가 스레드당 최대 한 번 더 이뤄질 수 있음
