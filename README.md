@@ -1,6 +1,7 @@
 # 이펙티브 자바 3판 스터디
 
-이 스터디는 [java-squid/effective-java](https://github.com/java-squid/effective-java) 를 기반하여 진행합니다.
+이 스터디는 [java-squid/effective-java](https://github.com/java-squid/effective-java) 를 기반하여 진행하였습니다.
+[👉스터디 회고](https://github.com/java-piledrivers/effective-java/issues/61)
 
 ## 목표
 
